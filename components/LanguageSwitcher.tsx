@@ -1,10 +1,14 @@
 "use client";
 import { useRouter } from "next/navigation";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export function LanguageSwitcher() {
   const router = useRouter();
   const switchLang = (lang: string) => {
-    const path = window.location.pathname.replace(/^\/(en|ar)/, "");
+    const pathname = window.location.pathname;
+    const afterBase = basePath ? pathname.replace(new RegExp(`^${basePath}`), "") : pathname;
+    const path = afterBase.replace(/^\/(en|ar)/, "");
     router.push(`/${lang}${path}`);
   };
 
