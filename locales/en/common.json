@@ -1,0 +1,10 @@
+{
+  "title": "FormFillr",
+  "tagline": "Generate realistic fake user data — instantly and privately.",
+  "generate": "Generate",
+  "count": "Number of users",
+  "fields": "Select fields",
+  "output": "Output format",
+  "copy": "Copy",
+  "download": "Download"
+}
