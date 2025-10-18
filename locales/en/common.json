@@ -6,5 +6,7 @@
   "fields": "Select fields",
   "output": "Output format",
   "copy": "Copy",
-  "download": "Download"
+  "download": "Download",
+  "locale": "Locale",
+  "format": "Format"
 }

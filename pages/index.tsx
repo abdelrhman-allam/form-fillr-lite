@@ -1,7 +1,10 @@
 import Head from 'next/head'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { generateFakeUsers } from '../utils/generateData'
 import { toCSV } from '../utils/toCSV'
+import { useRouter } from 'next/router'
+import { LanguageSwitcher } from '../components/LanguageSwitcher'
+import { getLocaleFromPath, getStrings, applyDirection } from '../I18N'
 
 type FieldKey =
   | 'id' | 'name' | 'firstName' | 'lastName' | 'email' | 'phone'
@@ -11,6 +14,8 @@ type FieldKey =
 const DEFAULT_FIELDS: FieldKey[] = ['id','name','email','phone','address']
 
 export default function Home() {
+  const router = useRouter()
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
   const [count, setCount] = useState<number>(25)
   const [locale, setLocale] = useState<string>('en')
   const [fields, setFields] = useState<FieldKey[]>(DEFAULT_FIELDS)
@@ -20,10 +25,21 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    const l = getLocaleFromPath(window.location.pathname, basePath)
+    setLocale(l)
+    applyDirection(l)
     // initial generation
     handleGenerate()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    const l = getLocaleFromPath(router.asPath, basePath)
+    setLocale(l)
+    applyDirection(l)
+  }, [router.asPath])
+
+  const strings = useMemo(() => getStrings((locale as any) || 'en'), [locale])
 
   function toggleField(f: FieldKey) {
     setFields(prev => prev.includes(f) ? prev.filter(x=>x!==f) : [...prev, f])
@@ -78,37 +94,40 @@ export default function Home() {
     
     <div>
       <Head>
-        <title>FormFillr — Generate fake user data (client-side)</title>
+        <title>{strings.title}</title>
         <meta name="description" content="Generate realistic fake user data (names, emails, addresses) for testing. Client-side only — your data never leaves your device." />
       </Head>
 
       <main className="max-w-4xl mx-auto p-6">
-        <header className="flex items-center justify-between mb-6">
+        <header className="flex items-center justify-between mb-6 bg-white/80 backdrop-blur rounded-xl p-4 shadow-soft">
           <div>
-            <h1 className="text-2xl font-semibold">FormFillr</h1>
-            <p className="text-sm text-gray-600">Generate realistic fake user data — instantly, privately.</p>
+            <h1 className="text-2xl font-semibold text-brand-700">{strings.title}</h1>
+            <p className="text-sm text-gray-600">{strings.tagline}</p>
           </div>
-          <div className="text-sm text-gray-500">Client-side • No server</div>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <span className="text-sm text-gray-500">Client-side • No server</span>
+          </div>
         </header>
 
-        <section className="bg-white rounded-xl shadow p-5 mb-6">
+        <section className="bg-white rounded-xl shadow p-5 mb-6 border border-brand-100">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="text-sm text-gray-700">Count</label>
+              <label className="text-sm text-gray-700">{strings.count}</label>
               <input
                 type="number"
                 min={1}
                 max={500}
                 value={count}
                 onChange={e => setCount(Number(e.target.value))}
-                className="mt-1 block w-full border rounded p-2"
+                className="mt-1 block w-full border rounded p-2 focus:outline-none focus:ring-2 focus:ring-brand-300"
               />
               <p className="text-xs text-gray-500 mt-1">Max 500</p>
             </div>
 
             <div>
-              <label className="text-sm text-gray-700">Locale</label>
-              <select value={locale} onChange={e=>setLocale(e.target.value)} className="mt-1 block w-full border rounded p-2">
+              <label className="text-sm text-gray-700">{strings.locale}</label>
+              <select value={locale} onChange={e=>{ const newLocale = e.target.value; setLocale(newLocale); const pathname = window.location.pathname; const afterBase = basePath ? pathname.replace(new RegExp(`^${basePath}`), "") : pathname; const path = afterBase.replace(/^\/(en|ar)/, ""); router.push(`/${newLocale}${path}`); }} className="mt-1 block w-full border rounded p-2 focus:outline-none focus:ring-2 focus:ring-brand-300">
                 <option value="ar">ar (Arabic)</option>
                 <option value="en">en (English)</option>
                 <option value="es">es (Spanish)</option>
@@ -120,8 +139,8 @@ export default function Home() {
             </div>
 
             <div>
-              <label className="text-sm text-gray-700">Format</label>
-              <select value={format} onChange={e=>setFormat(e.target.value as any)} className="mt-1 block w-full border rounded p-2">
+              <label className="text-sm text-gray-700">{strings.format}</label>
+              <select value={format} onChange={e=>setFormat(e.target.value as any)} className="mt-1 block w-full border rounded p-2 focus:outline-none focus:ring-2 focus:ring-brand-300">
                 <option value="json">JSON</option>
                 <option value="csv">CSV</option>
               </select>
@@ -129,14 +148,14 @@ export default function Home() {
           </div>
 
           <div className="mt-4">
-            <label className="text-sm text-gray-700">Fields</label>
+            <label className="text-sm text-gray-700">{strings.fields}</label>
             <div className="mt-2 grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
                 'id','name','firstName','lastName','email','phone','username','company','jobTitle','address','city','state','zip','country','dob','avatar'
               ].map((f) => {
                 const key = f as FieldKey
                 return (
-                  <label key={f} className="inline-flex items-center gap-2 bg-slate-50 px-3 py-2 rounded">
+                  <label key={f} className="inline-flex items-center gap-2 bg-slate-50 px-3 py-2 rounded hover:bg-slate-100">
                     <input type="checkbox" checked={fields.includes(key)} onChange={()=>toggleField(key)} />
                     <span className="text-sm">{f}</span>
                   </label>
@@ -146,11 +165,11 @@ export default function Home() {
           </div>
 
           <div className="mt-4 flex gap-3">
-            <button onClick={handleGenerate} className="bg-brand-500 text-white px-4 py-2 rounded shadow">
-              {loading ? 'Generating...' : 'Generate'}
+            <button onClick={handleGenerate} className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded shadow">
+              {loading ? 'Generating...' : strings.generate}
             </button>
-            <button onClick={copyToClipboard} className="border px-3 py-2 rounded">Copy</button>
-            <button onClick={download} className="border px-3 py-2 rounded">Download</button>
+            <button onClick={copyToClipboard} className="border px-3 py-2 rounded hover:bg-slate-50">{strings.copy}</button>
+            <button onClick={download} className="border px-3 py-2 rounded hover:bg-slate-50">{strings.download}</button>
             <div className="ml-auto text-sm text-gray-500 self-center">Preview rows:
               <input value={previewRows} onChange={(e)=>setPreviewRows(Number(e.target.value))} type="number" min={1} max={50} className="ml-2 w-16 border rounded p-1 inline-block" />
             </div>
@@ -159,16 +178,16 @@ export default function Home() {
         </section>
 
         <section className="bg-white rounded-xl shadow p-5">
-          <h2 className="text-lg font-medium mb-3">Preview</h2>
+          <h2 className="text-lg font-medium mb-3 text-brand-700">Preview</h2>
           {!data.length ? (
             <div className="text-sm text-gray-500">No preview — click Generate.</div>
           ) : (
             <>
-              <div className="overflow-auto">
+              <div className="overflow-auto rounded border border-slate-200">
                 <table className="w-full table-auto border-collapse">
                   <thead>
-                    <tr className="text-left">
-                      {fields.map(f => <th key={f} className="p-2 border-b text-xs text-gray-600">{f}</th>)}
+                    <tr className="text-left rtl:text-right bg-slate-50">
+                      {fields.map(f => <th key={f} className="p-2 border-b text-xs text-gray-700 font-medium">{f}</th>)}
                     </tr>
                   </thead>
                   <tbody>

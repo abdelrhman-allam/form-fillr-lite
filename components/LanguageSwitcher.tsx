@@ -14,8 +14,8 @@ export function LanguageSwitcher() {
 
   return (
     <div className="flex gap-2">
-      <button onClick={() => switchLang("en")} className="text-sm">EN</button>
-      <button onClick={() => switchLang("ar")} className="text-sm">AR</button>
+      <button onClick={() => switchLang("en")} className="text-sm px-2 py-1 rounded border border-brand-300 hover:bg-brand-50 hover:border-brand-400 transition-colors">EN</button>
+      <button onClick={() => switchLang("ar")} className="text-sm px-2 py-1 rounded border border-brand-300 hover:bg-brand-50 hover:border-brand-400 transition-colors">AR</button>
     </div>
   );
 }
