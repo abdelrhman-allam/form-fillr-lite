@@ -35,8 +35,8 @@ jobs:
             echo "BASE_PATH=/$REPO" >> $GITHUB_ENV
           fi
 
-      - name: Build and Export
-        run: npm run export
+      - name: Build (static export via next.config)
+        run: npm run build
         env:
           BASE_PATH: ${{ env.BASE_PATH }}
 
